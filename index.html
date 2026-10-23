@@ -5,94 +5,167 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>AgriNode | Smart Agriculture</title>
 <style>
-:root{font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;color:#17231b;background:#f2f6f1;--green:#216e45;--line:#dbe5dc;--muted:#66756a}
-*{box-sizing:border-box}body{margin:0}header{background:#174c32;color:#fff;padding:22px max(18px,calc((100% - 1120px)/2));display:flex;align-items:center;justify-content:space-between;gap:16px}header h1{margin:0;font-size:1.35rem}header p{margin:4px 0 0;color:#d6e9dc;font-size:.9rem}.wrap{max-width:1120px;margin:24px auto;padding:0 16px}.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:18px;box-shadow:0 3px 14px #163b1d08}.hidden{display:none!important}.auth{max-width:420px;margin:50px auto}.auth h2{margin-top:0}.field{display:block;width:100%;padding:12px;border:1px solid #cbd8ce;border-radius:9px;margin:7px 0 14px;font:inherit}button{border:0;border-radius:9px;background:var(--green);color:white;padding:11px 15px;font:inherit;font-weight:650;cursor:pointer}button.secondary{background:#e8f2eb;color:#174c32}button.danger{background:#a63b31}.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.muted{color:var(--muted)}.status{font-size:.88rem;margin-top:12px;color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.metric{background:#fbfdfb;border:1px solid var(--line);border-radius:13px;padding:16px;min-height:112px}.metric .label{font-size:.84rem;color:var(--muted)}.metric .value{font-size:1.6rem;font-weight:750;margin-top:10px;overflow-wrap:anywhere}.metric .unit{font-size:.9rem;font-weight:500;color:var(--muted)}h2{font-size:1.1rem;margin:0 0 14px}h3{font-size:1rem}.pill{display:inline-block;border-radius:999px;padding:5px 10px;background:#e8f2eb;color:#174c32;font-size:.8rem;font-weight:700}.pill.off{background:#f5e7e4;color:#8a2c22}.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:660px}th,td{text-align:left;padding:11px;border-bottom:1px solid var(--line);font-size:.9rem}th{color:var(--muted);font-weight:650}.notice{background:#fff8df;border:1px solid #f0df9d;padding:12px;border-radius:10px;font-size:.9rem}.small{font-size:.82rem}.spacer{flex:1}@media(max-width:800px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{align-items:flex-start;flex-direction:column}}@media(max-width:440px){.grid{grid-template-columns:1fr 1fr}.metric .value{font-size:1.25rem}.panel{padding:14px}}
+:root{
+  --bg:#eef2ec;--card:#fff;--ink:#16221a;--muted:#64746a;--line:#dde6de;
+  --green:#1f7a4a;--deep:#123d29;--red:#d6453d;--blue:#2f6fd6;--wet:#1d78c8;--dry:#c9811f;--ok:#22a45d;--bad:#c9443a;
+  font-family:"Segoe UI",Inter,system-ui,Arial,sans-serif;color:var(--ink);background:var(--bg)
+}
+*{box-sizing:border-box}body{margin:0;min-height:100vh}
+.hidden{display:none!important}
+header{background:linear-gradient(120deg,var(--deep),#1b5a3a);color:#fff;padding:18px max(16px,calc((100% - 1160px)/2));display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+header h1{margin:0;font-size:1.3rem;letter-spacing:.2px}header p{margin:3px 0 0;font-size:.85rem;color:#cfe5d7}
+.wrap{max-width:1160px;margin:22px auto;padding:0 16px 40px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;box-shadow:0 2px 10px #12301a0a}
+.card h2{margin:0 0 14px;font-size:1.02rem}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.spacer{flex:1}
+.muted{color:var(--muted)}.small{font-size:.82rem}
+button{font:inherit;font-weight:600;border:0;border-radius:9px;padding:10px 16px;cursor:pointer;background:var(--green);color:#fff;transition:filter .15s,transform .05s}
+button:hover{filter:brightness(1.08)}button:active{transform:scale(.97)}button:disabled{opacity:.5;cursor:wait}
+button.ghost{background:#e7f1ea;color:var(--deep)}
+.field{width:100%;padding:12px;border:1px solid #cbd8ce;border-radius:9px;margin:6px 0 14px;font:inherit}
+:focus-visible{outline:3px solid #7fc79d;outline-offset:2px}
+.auth{max-width:410px;margin:56px auto}
+.auth h2{font-size:1.3rem}
+.err{color:var(--bad)}
+/* status strip */
+.strip{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.dot{width:11px;height:11px;border-radius:50%;background:#aab5ad;display:inline-block}
+.dot.on{background:var(--ok);box-shadow:0 0 0 0 #22a45d88;animation:pulse 1.8s infinite}
+.dot.off{background:var(--bad)}
+@keyframes pulse{70%{box-shadow:0 0 0 9px #22a45d00}100%{box-shadow:0 0 0 0 #22a45d00}}
+@media(prefers-reduced-motion:reduce){.dot.on{animation:none}}
+.pill{border-radius:999px;padding:5px 12px;font-size:.8rem;font-weight:700;background:#e7f1ea;color:var(--deep)}
+.pill.on{background:#dcf4e5;color:#14753f}.pill.off{background:#f5e3e0;color:#9a2f26}
+/* layout */
+.top{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:16px;margin-bottom:16px}
+.two{display:grid;grid-template-columns:1.1fr 1fr;gap:16px;margin-bottom:16px}
+.big{font-size:2.4rem;font-weight:800;line-height:1.1}
+.label{font-size:.85rem;color:var(--muted);margin-bottom:8px}
+/* soil state */
+.state{display:flex;align-items:center;gap:16px}
+.drop{width:74px;height:74px;border-radius:50%;display:grid;place-items:center;font-size:2rem;background:#e8eef3;transition:background .4s}
+.state.wet .drop{background:#d8eafa}.state.dry .drop{background:#f8e8cf}
+.state.wet .big{color:var(--wet)}.state.dry .big{color:var(--dry)}
+/* rgb bars */
+.bar{margin:10px 0}
+.bar .head{display:flex;justify-content:space-between;font-size:.88rem;font-weight:600;margin-bottom:5px}
+.track{height:12px;background:#edf1ed;border-radius:99px;overflow:hidden}
+.fill{height:100%;width:0;border-radius:99px;transition:width .6s ease}
+.fill.r{background:var(--red)}.fill.g{background:var(--ok)}.fill.b{background:var(--blue)}.fill.c{background:#8a948d}
+.swatch{width:100%;height:92px;border-radius:12px;border:1px solid var(--line);background:#ccc;transition:background .6s;margin-bottom:12px}
+/* controls */
+.seg{display:inline-flex;background:#e7f1ea;border-radius:10px;padding:4px}
+.seg button{background:transparent;color:var(--deep);padding:8px 20px}
+.seg button.active{background:var(--green);color:#fff}
+.ctl{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-top:1px solid var(--line)}
+.sw{position:relative;width:58px;height:32px;border-radius:99px;background:#c6cfc8;padding:0;transition:background .2s;flex:none}
+.sw::after{content:"";position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 3px #0004}
+.sw.on{background:var(--ok)}.sw.on::after{left:30px}
+.msg{min-height:1.2em;font-size:.86rem;margin-top:10px;color:var(--muted)}
+/* table */
+.tw{overflow:auto;max-height:420px}
+table{width:100%;border-collapse:collapse;min-width:720px}
+th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);font-size:.88rem}
+th{position:sticky;top:0;background:#fff;color:var(--muted)}
+.tag{padding:3px 9px;border-radius:99px;font-size:.78rem;font-weight:700}
+.tag.WET{background:#d8eafa;color:#145b97}.tag.DRY{background:#f8e8cf;color:#8b5710}
+.chip{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px;border:1px solid #0002}
+.notice{background:#fff8df;border:1px solid #f0df9d;border-radius:10px;padding:12px;font-size:.86rem;margin-top:16px}
+@media(max-width:900px){.top,.two{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <header>
-  <div><h1>🌱 AgriNode Smart Agriculture</h1><p>Soil sensing · Soil-colour tests · Water control</p></div>
-  <div id="accountBar" class="row hidden"><span id="userEmail" class="small"></span><button id="signOutBtn" class="secondary">Sign out</button></div>
+  <div><h1>🌱 AgriNode Smart Agriculture</h1><p>Soil moisture, temperature, colour analysis and irrigation control</p></div>
+  <div id="accountBar" class="row hidden"><span id="userEmail" class="small"></span><button id="signOutBtn" class="ghost">Sign out</button></div>
 </header>
 
 <main class="wrap">
-  <section id="authPanel" class="panel auth">
+  <section id="authPanel" class="card auth">
     <h2>Sign in</h2>
-    <p class="muted">Use the email and password registered in Firebase Authentication.</p>
+    <p class="muted">Use the email and password from Firebase Authentication.</p>
     <form id="loginForm">
       <label for="email">Email address</label>
-      <input class="field" id="email" type="email" autocomplete="username" required placeholder="you@example.com">
+      <input class="field" id="email" type="email" autocomplete="username" required>
       <label for="password">Password</label>
-      <input class="field" id="password" type="password" autocomplete="current-password" required placeholder="Firebase account password">
+      <input class="field" id="password" type="password" autocomplete="current-password" required>
       <button type="submit" style="width:100%">Sign in</button>
     </form>
-    <p id="authMessage" class="status" role="status"></p>
-    <p class="small muted">Create accounts in Firebase Console → Authentication → Sign-in method → Email/Password, then Users → Add user.</p>
+    <p id="authMessage" class="msg" role="status"></p>
   </section>
 
   <section id="dashboard" class="hidden">
-    <div class="panel row">
-      <div><strong>Device status</strong><div id="deviceStatus" class="status">Waiting for sensor data…</div></div>
+    <div class="card strip">
+      <span id="onlineDot" class="dot"></span>
+      <div><strong id="onlineText">Waiting for device…</strong><div id="lastSeen" class="small muted">No data yet</div></div>
       <div class="spacer"></div>
       <span id="modeBadge" class="pill">AUTO</span>
       <span id="pumpBadge" class="pill off">PUMP OFF</span>
+      <span id="auxBadge" class="pill off">AUX OFF</span>
     </div>
 
-    <div class="grid">
-      <div class="metric"><div class="label">Soil temperature</div><div id="temperature" class="value">— <span class="unit">°C</span></div></div>
-      <div class="metric"><div class="label">Moisture module D0</div><div id="moisture" class="value">—</div><div class="small muted">Digital threshold only, not a percentage</div></div>
-      <div class="metric"><div class="label">Latest soil type</div><div id="soilType" class="value" style="font-size:1.15rem">Not tested</div></div>
-      <div class="metric"><div class="label">Auxiliary relay</div><div id="auxStatus" class="value">OFF</div></div>
+    <div class="top">
+      <div class="card">
+        <div class="label">Soil condition</div>
+        <div id="soilState" class="state">
+          <div class="drop" id="soilIcon">💧</div>
+          <div><div class="big" id="soilText">—</div><div class="small muted" id="soilSub">Moisture sensor D0</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="label">Soil temperature</div>
+        <div class="big" id="temp">—</div>
+        <div class="small muted">DS18B20 probe</div>
+      </div>
+      <div class="card">
+        <div class="label">Detected soil colour</div>
+        <div class="big" id="soilColor" style="font-size:1.7rem">Not tested</div>
+        <div class="small muted" id="colorSensorState">TCS34725 sensor</div>
+      </div>
     </div>
 
-    <section class="panel" style="margin-top:18px">
-      <h2>Colour sensor readings</h2>
-      <div class="grid">
-        <div class="metric"><div class="label">Red raw</div><div id="red" class="value">—</div></div>
-        <div class="metric"><div class="label">Green raw</div><div id="green" class="value">—</div></div>
-        <div class="metric"><div class="label">Blue raw</div><div id="blue" class="value">—</div></div>
-        <div class="metric"><div class="label">Clear raw</div><div id="clear" class="value">—</div></div>
+    <div class="two">
+      <div class="card">
+        <h2>Colour sensor</h2>
+        <div class="swatch" id="swatch"></div>
+        <div class="bar"><div class="head"><span style="color:var(--red)">Red</span><span id="rVal">—</span></div><div class="track"><div class="fill r" id="rBar"></div></div></div>
+        <div class="bar"><div class="head"><span style="color:var(--ok)">Green</span><span id="gVal">—</span></div><div class="track"><div class="fill g" id="gBar"></div></div></div>
+        <div class="bar"><div class="head"><span style="color:var(--blue)">Blue</span><span id="bVal">—</span></div><div class="track"><div class="fill b" id="bBar"></div></div></div>
+        <div class="bar"><div class="head"><span class="muted">Clear (light)</span><span id="cVal">—</span></div><div class="track"><div class="fill c" id="cBar"></div></div></div>
+        <div class="row" style="margin-top:16px"><button id="captureBtn">Capture soil sample</button><span id="captureMessage" class="msg" style="margin:0"></span></div>
       </div>
-      <p id="cropAdvice" class="muted">Crop guidance will appear after a soil test.</p>
-      <div class="row"><button id="captureBtn">Capture soil sample</button><span id="captureMessage" class="status"></span></div>
-    </section>
 
-    <section class="panel">
-      <h2>Control panel</h2>
-      <div class="row">
-        <label for="modeSelect">Operating mode</label>
-        <select id="modeSelect" class="field" style="width:auto;min-width:150px;margin:0">
-          <option value="AUTO">AUTO</option><option value="MANUAL">MANUAL</option>
-        </select>
-        <button id="saveModeBtn">Set mode</button>
+      <div class="card">
+        <h2>Control panel</h2>
+        <div class="row" style="margin-bottom:14px">
+          <span class="muted">Mode</span>
+          <div class="seg" role="group" aria-label="Operating mode">
+            <button id="autoBtn" type="button">AUTO</button>
+            <button id="manualBtn" type="button">MANUAL</button>
+          </div>
+        </div>
+        <p class="small muted" style="margin-top:0">AUTO: pump runs when soil is DRY and stops when WET. Switching a relay below changes the mode to MANUAL.</p>
+        <div class="ctl"><div><strong>Water pump</strong><div class="small muted" id="pumpSub">Relay 1</div></div><button id="pumpSw" class="sw" role="switch" aria-checked="false" aria-label="Water pump"></button></div>
+        <div class="ctl"><div><strong>Auxiliary relay</strong><div class="small muted" id="auxSub">Relay 2</div></div><button id="auxSw" class="sw" role="switch" aria-checked="false" aria-label="Auxiliary relay"></button></div>
+        <p id="controlMessage" class="msg" role="status"></p>
       </div>
-      <p class="small muted">AUTO uses the moisture module's D0 state and its potentiometer threshold. Verify the wet/dry polarity in firmware before using a pump.</p>
-      <div class="row" style="margin-top:12px">
-        <button id="pumpOnBtn">Manual pump ON</button>
-        <button id="pumpOffBtn" class="secondary">Manual pump OFF</button>
-        <button id="auxOnBtn">Aux relay ON</button>
-        <button id="auxOffBtn" class="secondary">Aux relay OFF</button>
-      </div>
-      <p class="small muted">Pump commands take effect in MANUAL mode. The auxiliary relay is controlled independently.</p>
-      <p id="controlMessage" class="status"></p>
-    </section>
+    </div>
 
-    <section class="panel">
-      <h2>Soil-test history</h2>
-      <p class="small muted">Records are stored under your authenticated Firebase user. Crop advice is a provisional colour-based hint, not a soil lab result.</p>
-      <div class="tablewrap">
-        <table><thead><tr><th>Sample</th><th>Soil class</th><th>RGB / Clear</th><th>Temp °C</th><th>Moisture D0</th><th>Advice</th></tr></thead>
-        <tbody id="historyBody"><tr><td colspan="6">No samples yet.</td></tr></tbody></table>
+    <div class="card">
+      <div class="row"><h2 style="margin:0">Soil-test history</h2><div class="spacer"></div><span class="small muted" id="histCount">0 samples</span></div>
+      <div class="tw" style="margin-top:12px">
+        <table><thead><tr><th>#</th><th>Time</th><th>Moisture</th><th>Soil colour</th><th>R / G / B / C</th><th>Temp</th><th>Advice</th></tr></thead>
+        <tbody id="historyBody"><tr><td colspan="7" class="muted">No samples yet. Press “Capture soil sample”.</td></tr></tbody></table>
       </div>
-    </section>
-    <div class="notice">Colour classification depends on illumination, distance, and calibration. For crop selection, also test soil pH, nutrients, texture, drainage, and local growing conditions.</div>
+    </div>
+    <div class="notice">Colour classification depends on lighting, distance and calibration. For crop decisions also test pH, nutrients, texture and drainage.</div>
   </section>
 </main>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getDatabase, ref, onValue, get, set, update, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, onValue, get, set, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDwin5A19sOGg1vln0WSPaohiMIOP8M4ts",
@@ -103,168 +176,185 @@ const firebaseConfig = {
   messagingSenderId: "427969882644",
   appId: "1:427969882644:web:8a1633f40504165a94d501"
 };
-
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
+const $ = id => document.getElementById(id);
 
-const $ = (id) => document.getElementById(id);
-let currentUid = null;
-let stopSensorListener = null;
-let stopHistoryListener = null;
-let stopControlListener = null;
+let uid = null, stops = [];
+let mode = "AUTO", pump = false, aux = false;
+let lastMarker = null, lastChange = 0;       // for online detection
+const pending = {};                           // optimistic UI overrides {key: expiresAt}
 
-function userPath(child = "") {
-  if (!currentUid) throw new Error("Not signed in");
-  return `/users/${currentUid}${child ? "/" + child : ""}`;
+const path = leaf => `/users/${uid}/${leaf}`;
+function msg(id, text, bad = false) { const e = $(id); e.textContent = text; e.className = "msg" + (bad ? " err" : ""); }
+function nice(e) { return (e && e.code === "PERMISSION_DENIED") || /permission/i.test(e?.message || "") ? "Permission denied. Check your Realtime Database rules and that you are signed in." : (e?.message || String(e)); }
+const isPending = k => pending[k] && pending[k] > Date.now();
+function hold(k) { pending[k] = Date.now() + 7000; }
+
+async function send(key, value) { await set(ref(db, path("control/" + key)), value); }
+
+/* ---------- render helpers ---------- */
+function renderToggle(btn, on) { btn.classList.toggle("on", on); btn.setAttribute("aria-checked", on); }
+function renderControls() {
+  $("autoBtn").classList.toggle("active", mode === "AUTO");
+  $("manualBtn").classList.toggle("active", mode === "MANUAL");
+  const m = $("modeBadge"); m.textContent = mode; m.className = "pill" + (mode === "AUTO" ? " on" : "");
+  renderToggle($("pumpSw"), pump); renderToggle($("auxSw"), aux);
+  const p = $("pumpBadge"); p.textContent = "PUMP " + (pump ? "ON" : "OFF"); p.className = "pill " + (pump ? "on" : "off");
+  const a = $("auxBadge"); a.textContent = "AUX " + (aux ? "ON" : "OFF"); a.className = "pill " + (aux ? "on" : "off");
+  $("pumpSub").textContent = pump ? "Running" : "Stopped";
+  $("auxSub").textContent = aux ? "Running" : "Stopped";
 }
-function showMessage(id, text, isError = false) {
-  $(id).textContent = text;
-  $(id).style.color = isError ? "#a63b31" : "";
+function setBar(id, valId, v, max) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) { $(valId).textContent = "—"; $(id).style.width = "0"; return; }
+  $(valId).textContent = Math.round(n);
+  $(id).style.width = Math.min(100, (n / Math.max(max, 1)) * 100) + "%";
 }
-function formatTemp(v) {
-  return typeof v === "number" && Number.isFinite(v) ? `${v.toFixed(2)} °C` : "Not available";
+function swatchColor(r, g, b) {
+  const m = Math.max(r, g, b);
+  if (!(m > 0)) return "#cccccc";
+  const k = 255 / m;
+  return `rgb(${Math.round(r * k)},${Math.round(g * k)},${Math.round(b * k)})`;
 }
-function setBadge(id, text, on) {
-  const el = $(id); el.textContent = text;
-  el.className = "pill" + (on ? "" : " off");
+function adviceFor(c) {
+  return ({ DARK: "Dark soil: often rich in organic matter. Test pH and nutrients.",
+            REDDISH: "Reddish soil: often iron-rich. Check drainage and pH.",
+            GREENISH: "Greenish reading: may be plant matter or algae. Retest on bare soil.",
+            BROWNISH: "Brownish soil: generally loamy. Confirm with pH and nutrient tests.",
+            MIXED: "Mixed colour. Recalibrate or retest the sample." })[c] || "Colour hint only. Lab test recommended.";
 }
-async function writeControl(key, value) {
-  if (!currentUid) return;
-  await set(ref(db, userPath(`control/${key}`)), value);
+
+/* ---------- live listeners ---------- */
+function start(u) {
+  stop();
+  stops.push(onValue(ref(db, `/users/${u}/sensorData`), snap => {
+    const s = snap.val() || {};
+    // soil wet / dry
+    const wet = typeof s.soilWet === "boolean" ? s.soilWet : (s.soilMoistureStatus || s.moistureState) === "WET";
+    const has = s.soilWet !== undefined || s.soilMoistureStatus || s.moistureState;
+    const st = $("soilState");
+    st.className = "state " + (has ? (wet ? "wet" : "dry") : "");
+    $("soilText").textContent = has ? (wet ? "WET" : "DRY") : "—";
+    $("soilIcon").textContent = has ? (wet ? "💧" : "🏜️") : "💧";
+    $("soilSub").textContent = has ? `Moisture D0 = ${s.moistureDigitalRaw ?? "—"}` : "Moisture sensor D0";
+    // temperature
+    const tOk = s.soilTempAvailable !== false && typeof s.soilTempC === "number" && s.soilTempC > -100;
+    $("temp").textContent = tOk ? s.soilTempC.toFixed(1) + " °C" : "N/A";
+    // colour
+    const r = s.redRaw ?? 0, g = s.greenRaw ?? 0, b = s.blueRaw ?? 0, c = s.clearRaw ?? 0;
+    const mx = Math.max(r, g, b, 1);
+    setBar("rBar", "rVal", s.redRaw, mx); setBar("gBar", "gVal", s.greenRaw, mx);
+    setBar("bBar", "bVal", s.blueRaw, mx); setBar("cBar", "cVal", s.clearRaw, Math.max(c, 1));
+    $("swatch").style.background = swatchColor(r, g, b);
+    $("soilColor").textContent = s.soilColor || "Not tested";
+    $("colorSensorState").textContent = s.colorSensorAvailable === false ? "TCS34725 not detected" : "TCS34725 sensor";
+    // pump / aux / mode (respect optimistic overrides)
+    if (!isPending("mode") && s.systemMode) mode = s.systemMode;
+    if (!isPending("pump") && s.pumpStatus) pump = s.pumpStatus === "ON";
+    if (!isPending("aux") && s.auxStatus) aux = s.auxStatus === "ON";
+    renderControls();
+    // online detection: marker must keep changing
+    const marker = s.lastUpdateMillis ?? s.updatedAtMs;
+    if (marker !== undefined && marker !== lastMarker) { lastMarker = marker; lastChange = Date.now(); }
+    checkOnline();
+  }, e => msg("controlMessage", "Live data error: " + nice(e), true)));
+
+  stops.push(onValue(ref(db, `/users/${u}/control`), snap => {
+    const c = snap.val() || {};
+    if (!isPending("mode") && (c.mode === "AUTO" || c.mode === "MANUAL")) { mode = c.mode; renderControls(); }
+  }));
+
+  stops.push(onValue(query(ref(db, `/users/${u}/soilHistory`), limitToLast(50)), snap => renderHistory(snap.val()),
+    e => msg("captureMessage", "History error: " + nice(e), true)));
 }
+function stop() { stops.forEach(f => f()); stops = []; lastMarker = null; lastChange = 0; }
+
+function checkOnline() {
+  const age = lastChange ? (Date.now() - lastChange) / 1000 : Infinity;
+  const on = age < 20;
+  $("onlineDot").className = "dot " + (lastChange ? (on ? "on" : "off") : "");
+  $("onlineText").textContent = lastChange ? (on ? "Device online" : "Device offline") : "Waiting for device…";
+  $("lastSeen").textContent = lastChange ? `Last update ${Math.round(age)} s ago` : "No data yet";
+}
+setInterval(checkOnline, 1000);
+
 function renderHistory(data) {
   const body = $("historyBody");
   body.replaceChildren();
-  if (!data) {
-    body.innerHTML = '<tr><td colspan="6">No samples yet.</td></tr>';
-    return;
-  }
-  const entries = Object.entries(data).slice(-50).reverse();
-  for (const [key, s] of entries) {
+  const list = data ? Object.values(data).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)) : [];
+  $("histCount").textContent = list.length + (list.length === 1 ? " sample" : " samples");
+  if (!list.length) { body.innerHTML = '<tr><td colspan="7" class="muted">No samples yet. Press “Capture soil sample”.</td></tr>'; return; }
+  list.forEach((s, i) => {
     const tr = document.createElement("tr");
-    const vals = [
-      s.sampleNumber ?? key,
-      s.soilColor ?? s.soilType ?? "—",
-      `R ${s.redRaw ?? s.red ?? "—"} / G ${s.greenRaw ?? s.green ?? "—"} / B ${s.blueRaw ?? s.blue ?? "—"} / C ${s.clearRaw ?? s.clear ?? "—"}`,
-      typeof s.soilTempC === "number" ? s.soilTempC.toFixed(2) : "Unavailable",
-      s.moistureDigitalRaw ?? s.moistureD0 ?? "—",
-      s.cropAdvice ?? "—"
-    ];
-    vals.forEach(v => { const td = document.createElement("td"); td.textContent = String(v); tr.appendChild(td); });
+    const add = (content, html) => { const td = document.createElement("td"); if (html) td.appendChild(content); else td.textContent = content; tr.appendChild(td); };
+    add(s.sampleNumber ?? list.length - i);
+    add(s.timestamp > 1e9 ? new Date(s.timestamp * 1000).toLocaleString() : "—");
+    const wet = s.soilWet === true || s.soilMoistureStatus === "WET";
+    const tag = document.createElement("span"); tag.className = "tag " + (wet ? "WET" : "DRY"); tag.textContent = wet ? "WET" : "DRY"; add(tag, true);
+    const cw = document.createElement("span");
+    const chip = document.createElement("span"); chip.className = "chip"; chip.style.background = swatchColor(s.redRaw, s.greenRaw, s.blueRaw);
+    cw.append(chip, document.createTextNode(s.soilColor || "—")); add(cw, true);
+    add(`${s.redRaw ?? "—"} / ${s.greenRaw ?? "—"} / ${s.blueRaw ?? "—"} / ${s.clearRaw ?? "—"}`);
+    add(typeof s.soilTempC === "number" && s.soilTempC > -100 ? s.soilTempC.toFixed(1) + " °C" : "N/A");
+    add(s.cropAdvice || adviceFor(s.soilColor));
     body.appendChild(tr);
-  }
-}
-function startListeners(uid) {
-  if (stopSensorListener) stopSensorListener();
-  if (stopHistoryListener) stopHistoryListener();
-  if (stopControlListener) stopControlListener();
-
-  stopSensorListener = onValue(ref(db, `/users/${uid}/sensorData`), snap => {
-    const s = snap.val() || {};
-    const temp = (s.soilTempAvailable === false || s.soilTempC === -999) ? null : s.soilTempC;
-    $("temperature").textContent = typeof temp === "number" ? `${temp.toFixed(2)} °C` : "Unavailable";
-    const wet = (typeof s.soilWet === "boolean") ? s.soilWet : s.moistureState === "WET";
-    const d0 = s.moistureDigitalRaw ?? s.moistureD0 ?? "—";
-    $("moisture").textContent = `${s.soilMoistureStatus || s.moistureState || (wet ? "WET" : "DRY")} (D0 ${d0})`;
-    $("soilType").textContent = s.soilColor || s.latestSoilType || "Not tested";
-    $("red").textContent = s.redRaw ?? s.red ?? "—";
-    $("green").textContent = s.greenRaw ?? s.green ?? "—";
-    $("blue").textContent = s.blueRaw ?? s.blue ?? "—";
-    $("clear").textContent = s.clearRaw ?? s.clear ?? "—";
-    $("cropAdvice").textContent = s.cropAdvice || "Colour is a preliminary indicator only; lab testing is needed for crop recommendations.";
-    $("auxStatus").textContent = s.auxStatus || (s.auxRunning ? "ON" : "OFF");
-    const mode = s.systemMode || s.mode || "AUTO";
-    setBadge("modeBadge", mode, mode === "AUTO");
-    const pump = s.pumpStatus || "OFF";
-    setBadge("pumpBadge", `PUMP ${pump}`, pump === "ON");
-    const last = s.updatedAtMs ?? s.lastUpdateMillis;
-    const online = s.deviceOnline === true || typeof last === "number";
-    $("deviceStatus").textContent = online ? "Device data received from Firebase" : "Waiting for device";
-    if (typeof last === "number") $("deviceStatus").textContent += ` · Last uptime marker: ${last} ms`;
-    $("modeSelect").value = mode;
-  }, err => showMessage("controlMessage", "Sensor read error: " + err.message, true));
-
-  stopHistoryListener = onValue(query(ref(db, `/users/${uid}/soilHistory`), limitToLast(50)), snap => renderHistory(snap.val()));
-
-  stopControlListener = onValue(ref(db, `/users/${uid}/control`), snap => {
-    const c = snap.val() || {};
-    if (c.mode) $("modeSelect").value = c.mode;
   });
 }
 
+/* ---------- actions ---------- */
+async function run(btn, okText, fn) {
+  btn.disabled = true;
+  try { await fn(); msg("controlMessage", okText); }
+  catch (e) { msg("controlMessage", nice(e), true); }
+  finally { btn.disabled = false; }
+}
+$("autoBtn").onclick = e => run(e.currentTarget, "Switched to AUTO mode.", async () => {
+  mode = "AUTO"; hold("mode"); renderControls(); await send("mode", "AUTO");
+});
+$("manualBtn").onclick = e => run(e.currentTarget, "Switched to MANUAL mode.", async () => {
+  mode = "MANUAL"; hold("mode"); renderControls(); await send("mode", "MANUAL");
+});
+$("pumpSw").onclick = e => run(e.currentTarget, "", async () => {
+  const next = !pump;
+  mode = "MANUAL"; pump = next; hold("mode"); hold("pump"); renderControls();
+  await send("mode", "MANUAL"); await send("manualPump", next ? "ON" : "OFF");
+  msg("controlMessage", `Pump ${next ? "ON" : "OFF"} command sent.`);
+});
+$("auxSw").onclick = e => run(e.currentTarget, "", async () => {
+  const next = !aux;
+  mode = "MANUAL"; aux = next; hold("mode"); hold("aux"); renderControls();
+  await send("mode", "MANUAL"); await send("manualAux", next ? "ON" : "OFF");
+  msg("controlMessage", `Auxiliary relay ${next ? "ON" : "OFF"} command sent.`);
+});
+$("captureBtn").onclick = async e => {
+  const b = e.currentTarget; b.disabled = true;
+  try {
+    const p = ref(db, path("control/captureRequest"));
+    const v = Number((await get(p)).val()) || 0;
+    await set(p, v + 1);
+    msg("captureMessage", "Capture requested. The sample appears in the history within a few seconds.");
+  } catch (err) { msg("captureMessage", nice(err), true); }
+  finally { setTimeout(() => b.disabled = false, 2500); }
+};
+
+/* ---------- auth ---------- */
 $("loginForm").addEventListener("submit", async e => {
-  e.preventDefault();
-  showMessage("authMessage", "Signing in…");
+  e.preventDefault(); msg("authMessage", "Signing in…");
   try {
     await signInWithEmailAndPassword(auth, $("email").value.trim(), $("password").value);
-    $("password").value = "";
-    showMessage("authMessage", "");
-  } catch (err) {
-    showMessage("authMessage", err.message, true);
-  }
+    $("password").value = ""; msg("authMessage", "");
+  } catch (err) { msg("authMessage", "Sign-in failed: check your email and password.", true); }
 });
-$("signOutBtn").addEventListener("click", () => signOut(auth));
+$("signOutBtn").onclick = () => signOut(auth);
 onAuthStateChanged(auth, user => {
-  currentUid = user?.uid || null;
+  uid = user ? user.uid : null;
   $("authPanel").classList.toggle("hidden", !!user);
   $("dashboard").classList.toggle("hidden", !user);
   $("accountBar").classList.toggle("hidden", !user);
-  $("userEmail").textContent = user?.email || "";
-  if (user) startListeners(user.uid);
-  else {
-    if (stopSensorListener) stopSensorListener();
-    if (stopHistoryListener) stopHistoryListener();
-    if (stopControlListener) stopControlListener();
-  }
-});
-
-$("saveModeBtn").addEventListener("click", async () => {
-  try { await writeControl("mode", $("modeSelect").value); showMessage("controlMessage", "Mode command saved."); }
-  catch (e) { showMessage("controlMessage", e.message, true); }
-});
-$("pumpOnBtn").addEventListener("click", async () => {
-  try {
-    await writeControl("manualPump", true);
-    await writeControl("mode", "MANUAL");
-    $("modeSelect").value = "MANUAL";
-    showMessage("controlMessage", "Manual pump ON requested.");
-  } catch (e) { showMessage("controlMessage", e.message, true); }
-});
-$("pumpOffBtn").addEventListener("click", async () => {
-  try {
-    await writeControl("manualPump", false);
-    await writeControl("mode", "MANUAL");
-    $("modeSelect").value = "MANUAL";
-    showMessage("controlMessage", "Manual pump OFF requested.");
-  } catch (e) { showMessage("controlMessage", e.message, true); }
-});
-$("auxOnBtn").addEventListener("click", async () => {
-  try {
-    await writeControl("mode", "MANUAL");
-    await writeControl("auxOn", true);
-    $("modeSelect").value = "MANUAL";
-    showMessage("controlMessage", "Auxiliary relay ON requested.");
-  }
-  catch (e) { showMessage("controlMessage", e.message, true); }
-});
-$("auxOffBtn").addEventListener("click", async () => {
-  try {
-    await writeControl("mode", "MANUAL");
-    await writeControl("auxOn", false);
-    $("modeSelect").value = "MANUAL";
-    showMessage("controlMessage", "Auxiliary relay OFF requested.");
-  }
-  catch (e) { showMessage("controlMessage", e.message, true); }
-});
-$("captureBtn").addEventListener("click", async () => {
-  try {
-    const p = ref(db, userPath("control/captureRequest"));
-    const snap = await get(p);
-    const next = (Number(snap.val()) || 0) + 1;
-    await set(p, next);
-    showMessage("captureMessage", "Capture request sent to ESP32.");
-  } catch (e) { showMessage("captureMessage", e.message, true); }
+  $("userEmail").textContent = user ? user.email : "";
+  if (user) { renderControls(); start(user.uid); } else stop();
 });
 </script>
 </body>

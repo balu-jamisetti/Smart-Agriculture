@@ -145,10 +145,10 @@ function renderHistory(data) {
     const tr = document.createElement("tr");
     const vals = [
       s.sampleNumber ?? key,
-      s.soilType ?? "—",
-      `R ${s.red ?? "—"} / G ${s.green ?? "—"} / B ${s.blue ?? "—"} / C ${s.clear ?? "—"}`,
+      s.soilColor ?? s.soilType ?? "—",
+      `R ${s.redRaw ?? s.red ?? "—"} / G ${s.greenRaw ?? s.green ?? "—"} / B ${s.blueRaw ?? s.blue ?? "—"} / C ${s.clearRaw ?? s.clear ?? "—"}`,
       typeof s.soilTempC === "number" ? s.soilTempC.toFixed(2) : "Unavailable",
-      s.moistureD0 ?? "—",
+      s.moistureDigitalRaw ?? s.moistureD0 ?? "—",
       s.cropAdvice ?? "—"
     ];
     vals.forEach(v => { const td = document.createElement("td"); td.textContent = String(v); tr.appendChild(td); });
@@ -162,20 +162,27 @@ function startListeners(uid) {
 
   stopSensorListener = onValue(ref(db, `/users/${uid}/sensorData`), snap => {
     const s = snap.val() || {};
-    $("temperature").textContent = typeof s.soilTempC === "number" ? `${s.soilTempC.toFixed(2)} °C` : "Unavailable";
-    $("moisture").textContent = s.moistureState ? `${s.moistureState} (D0 ${s.moistureD0 ?? "—"})` : (s.moistureD0 ?? "—");
-    $("soilType").textContent = s.latestSoilType || "Not tested";
-    $("red").textContent = s.red ?? "—";
-    $("green").textContent = s.green ?? "—";
-    $("blue").textContent = s.blue ?? "—";
-    $("clear").textContent = s.clear ?? "—";
-    $("cropAdvice").textContent = s.cropAdvice || "Crop guidance will appear after a soil test.";
-    $("auxStatus").textContent = s.auxStatus || "OFF";
-    setBadge("modeBadge", s.mode || "AUTO", (s.mode || "AUTO") === "AUTO");
-    setBadge("pumpBadge", `PUMP ${s.pumpStatus || "OFF"}`, (s.pumpStatus || "OFF") === "ON");
-    $("deviceStatus").textContent = s.deviceOnline ? "Device reporting sensor data" : "Waiting for device";
-    if (s.updatedAtMs) $("deviceStatus").textContent += ` · Last device uptime marker: ${s.updatedAtMs} ms`;
-    if (s.mode) $("modeSelect").value = s.mode;
+    const temp = (s.soilTempAvailable === false || s.soilTempC === -999) ? null : s.soilTempC;
+    $("temperature").textContent = typeof temp === "number" ? `${temp.toFixed(2)} °C` : "Unavailable";
+    const wet = (typeof s.soilWet === "boolean") ? s.soilWet : s.moistureState === "WET";
+    const d0 = s.moistureDigitalRaw ?? s.moistureD0 ?? "—";
+    $("moisture").textContent = `${s.soilMoistureStatus || s.moistureState || (wet ? "WET" : "DRY")} (D0 ${d0})`;
+    $("soilType").textContent = s.soilColor || s.latestSoilType || "Not tested";
+    $("red").textContent = s.redRaw ?? s.red ?? "—";
+    $("green").textContent = s.greenRaw ?? s.green ?? "—";
+    $("blue").textContent = s.blueRaw ?? s.blue ?? "—";
+    $("clear").textContent = s.clearRaw ?? s.clear ?? "—";
+    $("cropAdvice").textContent = s.cropAdvice || "Colour is a preliminary indicator only; lab testing is needed for crop recommendations.";
+    $("auxStatus").textContent = s.auxStatus || (s.auxRunning ? "ON" : "OFF");
+    const mode = s.systemMode || s.mode || "AUTO";
+    setBadge("modeBadge", mode, mode === "AUTO");
+    const pump = s.pumpStatus || "OFF";
+    setBadge("pumpBadge", `PUMP ${pump}`, pump === "ON");
+    const last = s.updatedAtMs ?? s.lastUpdateMillis;
+    const online = s.deviceOnline === true || typeof last === "number";
+    $("deviceStatus").textContent = online ? "Device data received from Firebase" : "Waiting for device";
+    if (typeof last === "number") $("deviceStatus").textContent += ` · Last uptime marker: ${last} ms`;
+    $("modeSelect").value = mode;
   }, err => showMessage("controlMessage", "Sensor read error: " + err.message, true));
 
   stopHistoryListener = onValue(query(ref(db, `/users/${uid}/soilHistory`), limitToLast(50)), snap => renderHistory(snap.val()));
@@ -233,11 +240,21 @@ $("pumpOffBtn").addEventListener("click", async () => {
   } catch (e) { showMessage("controlMessage", e.message, true); }
 });
 $("auxOnBtn").addEventListener("click", async () => {
-  try { await writeControl("auxOn", true); showMessage("controlMessage", "Auxiliary relay ON requested."); }
+  try {
+    await writeControl("mode", "MANUAL");
+    await writeControl("auxOn", true);
+    $("modeSelect").value = "MANUAL";
+    showMessage("controlMessage", "Auxiliary relay ON requested.");
+  }
   catch (e) { showMessage("controlMessage", e.message, true); }
 });
 $("auxOffBtn").addEventListener("click", async () => {
-  try { await writeControl("auxOn", false); showMessage("controlMessage", "Auxiliary relay OFF requested."); }
+  try {
+    await writeControl("mode", "MANUAL");
+    await writeControl("auxOn", false);
+    $("modeSelect").value = "MANUAL";
+    showMessage("controlMessage", "Auxiliary relay OFF requested.");
+  }
   catch (e) { showMessage("controlMessage", e.message, true); }
 });
 $("captureBtn").addEventListener("click", async () => {
